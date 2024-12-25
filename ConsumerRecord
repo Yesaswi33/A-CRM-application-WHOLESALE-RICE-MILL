@@ -1,0 +1,42 @@
+public class ConsumerRecord {
+    public static void sendEmailNotification(List<consumer__c> consumers) {
+        List<Messaging.SingleEmailMessage> emails = new List<Messaging.SingleEmailMessage>();
+        
+        for (consumer__c consumer : consumers) {
+            if (consumer.email__c != null) { // Ensure email field is not null
+                try {
+                    Messaging.SingleEmailMessage email = new Messaging.SingleEmailMessage();
+                    email.setToAddresses(new List<String>{consumer.email__c});
+                    email.setSubject('Welcome to our company');
+                    
+                    // Use String.format for better readability and dynamic values
+                    String body = String.format(
+                        'Dear {0},\n\n' + 
+                        'Welcome to MY RICE!\n' +
+                        'You have been seen as a valuable customer to us. Please continue your journey with us, while we try to provide you with good quality resources.\n\n' +
+                        'We are proud to associate with valuable customers like you and look forward to collaborating with you by providing exciting discounts and product offers.\n\n' +
+                        'Thank you for shopping with us!\n' +
+                        'Here are some of the products that other customers, similar to you, have purchased.\n\n' +
+                        'Best regards,\nMY RICE Team', 
+                        new List<String>{consumer.Name}
+                    );
+                    
+                    email.setPlainTextBody(body);
+                    emails.add(email);
+                } catch (Exception e) {
+                    // Log error for debugging
+                    System.debug('Failed to create email for consumer ID: ' + consumer.Id + ', Error: ' + e.getMessage());
+                }
+            }
+        }
+        
+        // Send all emails in bulk
+        if (!emails.isEmpty()) {
+            try {
+                Messaging.sendEmail(emails);
+            } catch (Exception e) {
+                System.debug('Failed to send emails: ' + e.getMessage());
+            }
+        }
+    }
+}
