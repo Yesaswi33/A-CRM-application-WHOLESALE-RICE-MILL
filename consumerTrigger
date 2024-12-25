@@ -1,0 +1,10 @@
+trigger consumerTrigger on consumer__c (after insert) {
+    if (Trigger.isAfter && Trigger.isInsert) {
+        try {
+            ConsumerRecord.sendEmailNotification(Trigger.new);
+        } catch (Exception e) {
+            // Log the exception for debugging
+            System.debug('Error in consumerTrigger: ' + e.getMessage());
+        }
+    }
+}
